@@ -1,0 +1,101 @@
+{
+  "name": "enrichment-tim-worker",
+  "version": "1.0.0",
+  "description": "Enrichment Tim Worker",
+  "author": "DAT Solutions",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:dat-freight-and-analytics/enrichment-tim-worker.git"
+  },
+  "keywords": [
+    "enrichment-tim-worker"
+  ],
+  "license": "UNLICENSED",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "nodemon -w src -e ts -x node --inspect -r ts-node/register -r dotenv/config -r tsconfig-paths/register src/index.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "test": "nyc mocha \"tests/**/*.spec.ts\" --recursive -c --require source-map-support/register --reporter mocha-jenkins-reporter --full-trace",
+    "node": "node ./build/index.js",
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "lint+format": "npm run format && npm run lint",
+    "compose:kafka": "docker-compose up -d kafka",
+    "compose:mysql": "docker-compose up -d mysql",
+    "compose:documentDB": "docker-compose up -d document-db",
+    "update:dependencies": "ncu -u -x yn && npm install"
+  },
+  "dependencies": {
+    "@dat/logger": "^3.0.0",
+    "@dat/node-mysql": "^2.0.0",
+    "deep-diff": "^1.0.2",
+    "joi": "^17.7.0",
+    "kafkajs": "^2.2.3",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.4",
+    "mongoose": "^6.8.3",
+    "morphism": "^1.12.3",
+    "newrelic": "^9.7.5",
+    "uniqid": "^5.4.0",
+    "uuid": "^9.0.0",
+    "yn": "4.0.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.4",
+    "@types/dotenv": "^6.1.1",
+    "@types/lodash": "^4.14.191",
+    "@types/mocha": "^10.0.1",
+    "@types/mongoose": "^5.11.97",
+    "@types/newrelic": "^9.4.0",
+    "@types/node": "^18.11.18",
+    "@types/sinon": "^10.0.13",
+    "@types/uniqid": "^5.3.2",
+    "@typescript-eslint/eslint-plugin": "^5.48.2",
+    "chai": "^4.3.7",
+    "dotenv": "^16.0.3",
+    "eslint": "^8.32.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-no-only-tests": "^3.1.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "mocha": "^10.2.0",
+    "mocha-jenkins-reporter": "^0.4.8",
+    "nodemon": "^2.0.20",
+    "npm-check-updates": "^16.6.2",
+    "nyc": "^15.1.0",
+    "prettier": "^2.8.3",
+    "sinon": "^15.0.1",
+    "ts-mock-imports": "^1.3.8",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.1.2",
+    "typescript": "^4.9.4"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "tests/**/*",
+      "src/configs",
+      "src/generate",
+      "src/migrations"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "dotenv/config",
+      "ts-node/register",
+      "tsconfig-paths/register"
+    ],
+    "reporter": [
+      "lcov",
+      "cobertura"
+    ],
+    "all": true,
+    "sourceMap": true,
+    "instrument": true,
+    "report-dir": "build/reports/coverage"
+  }
+}

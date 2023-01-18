@@ -1,0 +1,81 @@
+version: '3.8'
+services:
+  worker:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env
+    entrypoint: /bin/bash
+    command: npm run node
+    depends_on:
+      - kafka
+      - document-db
+      - mysql
+    networks:
+      - enrichment-tim-worker
+
+  zookeeper:
+    image: dat-docker.jfrog.io/wurstmeister/zookeeper:latest
+    restart: always
+    ports:
+      - "2182:2181"
+    networks:
+      - enrichment-tim-worker
+
+  kafka:
+    image: dat-docker.jfrog.io/wurstmeister/kafka:2.12-2.2.2
+    restart: always
+    depends_on:
+      - zookeeper
+    ports:
+      - '9092:9092'
+      - '9094:9094'
+    links:
+      - zookeeper
+    environment:
+      KAFKA_LISTENERS: INTERNAL://kafka:9092,OUTSIDE://kafka:9094
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,OUTSIDE://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_DELETE_TOPIC_ENABLE: 'true'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - enrichment-tim-worker
+
+  document-db:
+    hostname: mongo
+    image: dat-docker.jfrog.io/mongo:6.0
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - 27017:27017
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - enrichment-tim-worker
+
+  mysql:
+    image: mysql:5.7
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_USER: test
+      MYSQL_USERNAME: test
+      MYSQL_PASSWORD: Contract123!
+      MYSQL_ROOT_PASSWORD: rootpswd1!
+      MYSQL_DATABASE: company_system
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    command: --max_connections=500
+    networks:
+      - enrichment-tim-worker
+
+networks:
+  enrichment-tim-worker:
+    driver: bridge
